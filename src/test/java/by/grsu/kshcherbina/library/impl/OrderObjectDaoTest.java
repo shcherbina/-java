@@ -4,106 +4,101 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import by.grsu.kshcherbina.library.db.dao.IDao;
-import by.grsu.kshcherbina.library.db.model.Brand;
-import by.grsu.kshcherbina.library.db.model.Car;
-import by.grsu.kshcherbina.library.db.model.Model;
-import by.grsu.dzhivushko.cars.db.model.UserAccount;
+import by.grsu.kshcherbina.library.db.model.Order;
+import by.grsu.kshcherbina.library.db.model.Book;
+import by.grsu.kshcherbina.library.db.model.UserAccount;
+import by.grsu.kshcherbina.library.db.dao.impl.BookDaoImpl;
+import by.grsu.kshcherbina.library.db.dao.impl.UserAccountDaoImpl;
+import by.grsu.kshcherbina.library.db.dao.impl.OrderObjectDaoImpl;
+import by.grsu.kshcherbina.library.db.dao.impl.LibraryDaoImpl;
+import by.grsu.kshcherbina.library.db.model.Library;
 
-public class CarDaoTest extends AbstractTest {
-	private static final IDao<Integer, Brand> brandDao = BrandDaoImpl.INSTANCE;
-	private static final IDao<Integer, Model> modelDao = ModelDaoImpl.INSTANCE;
-	private static final IDao<Integer, Car> carDao = CarDaoImpl.INSTANCE;
-	private static final IDao<Integer, UserAccount> userAccountDao = UserAccountDaoImpl.INSTANCE;
+public class OrderObjectDaoTest extends AbstractTest {
+	private static final IDao<Integer, Order> orderDao = OrderObjectDaoImpl.INSTANCE;
+	private static final IDao<Integer, Book> bookDao = BookDaoImpl.INSTANCE;
+	private static final IDao<Integer, UserAccount> userDao = UserAccountDaoImpl.INSTANCE;
+	private static final IDao<Integer, Library> libraryDao = LibraryDaoImpl.INSTANCE;
 
 	@Test
 	public void testInsert() {
-		Car entity = new Car();
-		entity.setModelId(saveModel("audi", "Q5").getId());
-		entity.setVin("WAUZZZ8K0BA003806");
-		entity.setOwnerId(saveUserAccount().getId());
-		entity.setCreated(getCurrentTime());
-		entity.setUpdated(getCurrentTime());
-		carDao.insert(entity);
-		Assertions.assertNotNull(entity.getId());
-	}
-
-	@Test
-	public void testInsertWithoutOwner() {
-		Car entity = new Car();
-		entity.setModelId(saveModel("audi", "Q5").getId());
-		entity.setVin("WAUZZZ8K0BA003806");
-		entity.setCreated(getCurrentTime());
-		entity.setUpdated(getCurrentTime());
-		carDao.insert(entity);
+		Order entity = new Order();
+		entity.setTakenOn(getCurrentTime());
+		entity.setBookId(saveBook().getId());
+		entity.setUserAccount(saveUserAccount().getId());
+		entity.setReturnOn(getCurrentTime());
+		orderDao.insert(entity);
 		Assertions.assertNotNull(entity.getId());
 	}
 
 	@Test
 	public void testUpdate() {
-		Car entity = new Car();
-		entity.setModelId(saveModel("audi", "Q5").getId());
-		entity.setVin("WAUZZZ8K0BA003806");
-		entity.setCreated(getCurrentTime());
-		entity.setUpdated(getCurrentTime());
-		carDao.insert(entity);
+		Order entity = new Order();
+		entity.setTakenOn(getCurrentTime());
+		entity.setBookId(saveBook().getId());
+		entity.setUserAccount(saveUserAccount().getId());
+		entity.setReturnOn(getCurrentTime());
+		orderDao.insert(entity);
 
-		Model newModel = saveModel("opel", "corsa");
-		entity.setVin("new_WAUZZZ8K0BA003806");
-		entity.setModelId(newModel.getId());
-		entity.setUpdated(getCurrentTime());
-		carDao.update(entity);
+		UserAccount userEntity = new UserAccount();
+		userEntity.setFirstName("Gleb");
+		userEntity.setLastName("Glebov");
+		userEntity.setCreated(getCurrentTime());
+		userEntity.setEmail("1234@gmail.com");
+		userEntity.setAddress("1234123411");
+		userEntity.setTelephone(124123413);
+		userDao.insert(userEntity);
 
-		Car updatedEntity = carDao.getById(entity.getId());
-		Assertions.assertEquals(newModel.getId(), updatedEntity.getModelId());
-		Assertions.assertEquals("WAUZZZ8K0BA003806", updatedEntity.getVin()); // VIN should stay unchanged as DAO doesn't update it
-		Assertions.assertNotEquals(updatedEntity.getUpdated(), updatedEntity.getCreated());
+		entity.setUserAccount(userEntity.getId());
+		orderDao.update(entity);
+
+		Order updatedEntity = orderDao.getById(entity.getId());
+		Assertions.assertEquals(userEntity.getId(), updatedEntity.getUserAccount());
 	}
 
 	@Test
 	public void testDelete() {
-		Car entity = new Car();
-		entity.setModelId(saveModel("audi", "Q5").getId());
-		entity.setVin("WAUZZZ8K0BA003806");
-		entity.setCreated(getCurrentTime());
-		entity.setUpdated(getCurrentTime());
-		carDao.insert(entity);
+		Order entity = new Order();
+		entity.setTakenOn(getCurrentTime());
+		entity.setBookId(saveBook().getId());
+		entity.setUserAccount(saveUserAccount().getId());
+		entity.setReturnOn(getCurrentTime());
+		orderDao.insert(entity);
 
-		carDao.delete(entity.getId());
+		orderDao.delete(entity.getId());
 
-		Assertions.assertNull(carDao.getById(entity.getId()));
+		Assertions.assertNull(orderDao.getById(entity.getId()));
 	}
 
 	@Test
 	public void testGetById() {
-		Car entity = new Car();
-		entity.setModelId(saveModel("audi", "Q5").getId());
-		entity.setVin("WAUZZZ8K0BA003806");
-		entity.setCreated(getCurrentTime());
-		entity.setUpdated(getCurrentTime());
-		carDao.insert(entity);
+		Order entity = new Order();
+		entity.setTakenOn(getCurrentTime());
+		entity.setBookId(saveBook().getId());
+		entity.setUserAccount(saveUserAccount().getId());
+		entity.setReturnOn(getCurrentTime());
+		orderDao.insert(entity);
 
-		Car selectedEntity = carDao.getById(entity.getId());
+		Order selectedEntity = orderDao.getById(entity.getId());
 
-		Assertions.assertEquals(entity.getModelId(), selectedEntity.getModelId());
-		Assertions.assertEquals(entity.getVin(), selectedEntity.getVin());
-		Assertions.assertEquals(0, selectedEntity.getOwnerId());
-		Assertions.assertEquals(entity.getCreated(), selectedEntity.getCreated());
-		Assertions.assertEquals(entity.getUpdated(), selectedEntity.getUpdated());
+		Assertions.assertEquals(entity.getUserAccount(), selectedEntity.getUserAccount());
+		Assertions.assertEquals(entity.getBookId(), selectedEntity.getBookId());
+		Assertions.assertEquals(entity.getReturnOn(), selectedEntity.getReturnOn());
+		Assertions.assertEquals(entity.getTakenOn(), selectedEntity.getTakenOn());
 	}
 
 	@Test
 	public void testGetAll() {
 		int expectedCount = getRandomNumber(1, 5);
 		for (int i = 1; i <= expectedCount; i = i + 1) {
-			Car entity = new Car();
-			entity.setModelId(saveModel("audi"+i, "Q5"+i).getId());
-			entity.setVin("WAUZZZ8K0BA003806"+i);
-			entity.setCreated(getCurrentTime());
-			entity.setUpdated(getCurrentTime());
-			carDao.insert(entity);
+			Order entity = new Order();
+			entity.setTakenOn(getCurrentTime());
+			entity.setBookId(saveBook().getId());
+			entity.setUserAccount(saveUserAccount().getId());
+			entity.setReturnOn(getCurrentTime());
+			orderDao.insert(entity);
 		}
 
-		Assertions.assertEquals(expectedCount, carDao.getAll().size());
+		Assertions.assertEquals(expectedCount, orderDao.getAll().size());
 	}
 
 	private UserAccount saveUserAccount() {
@@ -111,26 +106,26 @@ public class CarDaoTest extends AbstractTest {
 		entity.setFirstName("Ivan");
 		entity.setLastName("Ivanov");
 		entity.setCreated(getCurrentTime());
-		entity.setUpdated(getCurrentTime());
-		userAccountDao.insert(entity);
+		entity.setEmail("123@gmail.com");
+		entity.setAddress("123412341");
+		entity.setTelephone(124123412);
+		userDao.insert(entity);
 		return entity;
 	}
 
-	private Model saveModel(String brand, String model) {
-		Brand brandEntity = new Brand();
-		brandEntity.setName(brand);
-		brandEntity.setCreated(getCurrentTime());
-		brandEntity.setUpdated(getCurrentTime());
-		brandDao.insert(brandEntity);
+	private Book saveBook() {
+		Library libEntity = new Library();
+		libEntity.setTelephone(1234123);
+		libEntity.setEmail("pivo@gmail.com");
+		libEntity.setAddress("oasosoda");
+		libraryDao.insert(libEntity);
 
-		Model modelEntity = new Model();
-		modelEntity.setName(model);
-		modelEntity.setActual(true);
-		modelEntity.setBrandId(brandEntity.getId());
-		modelEntity.setCreated(getCurrentTime());
-		modelEntity.setUpdated(getCurrentTime());
-		modelDao.insert(modelEntity);
-
-		return modelEntity;
+		Book entity = new Book();
+		entity.setName("trash");
+		entity.setAuthor("Me");
+		entity.setPage(123);
+		entity.setLibraryId(libEntity.getId());
+		bookDao.insert(entity);
+		return entity;
 	}
 }
